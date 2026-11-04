@@ -1,0 +1,100 @@
+<style>
+  body { font: 13px/1.45 Inter, system-ui, sans-serif; margin: 0; padding: 16px; color: var(--figma-color-text); background: var(--figma-color-bg); }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  p { margin: 0 0 12px; color: var(--figma-color-text-secondary); }
+  label { display: grid; gap: 4px; margin-bottom: 10px; font-weight: 500; }
+  input { padding: 8px 10px; border: 1px solid var(--figma-color-border); border-radius: 6px; background: var(--figma-color-bg); color: var(--figma-color-text); font: inherit; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .actions { display: grid; gap: 8px; margin-top: 6px; }
+  button { padding: 10px; border-radius: 6px; border: 1px solid var(--figma-color-border); background: var(--figma-color-bg); color: var(--figma-color-text); font: 600 13px Inter, sans-serif; cursor: pointer; }
+  button.primary { background: #4F46E5; border-color: #4F46E5; color: #fff; }
+  button:disabled { opacity: .5; cursor: progress; }
+  #log { margin-top: 12px; padding: 10px; border-radius: 6px; background: var(--figma-color-bg-secondary); white-space: pre-wrap; min-height: 60px; font-size: 12px; }
+  small { color: var(--figma-color-text-secondary); }
+</style>
+
+<h1>Nexo Sync</h1>
+<p>Mantém este arquivo e o repositório no GitHub iguais: cores (<code>design/tokens.json</code>) e textos (<code>design/content.json</code>).</p>
+
+<div class="row">
+  <label>Usuário/organização<input id="owner" placeholder="seu-usuario"></label>
+  <label>Repositório<input id="repo" placeholder="nexo-fluxo-main"></label>
+</div>
+<div class="row">
+  <label>Branch<input id="branch" value="main"></label>
+  <label>Token do GitHub<input id="token" type="password" placeholder="github_pat_…"></label>
+</div>
+<small>O token fica salvo só neste computador. Precisa da permissão <b>Contents: Read and write</b> no repositório.</small>
+
+<div class="actions">
+  <button class="primary" id="pull">⬇ Puxar do GitHub (GitHub → Figma)</button>
+  <button id="push">⬆ Enviar para o GitHub (Figma → GitHub)</button>
+</div>
+<div id="log">Pronto.</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const FILES = { tokens: "design/tokens.json", content: "design/content.json" };
+const log = (t) => { $("log").textContent = t; };
+const settings = () => ({ owner: $("owner").value.trim(), repo: $("repo").value.trim(), branch: $("branch").value.trim() || "main", token: $("token").value.trim() });
+const busy = (b) => { $("pull").disabled = b; $("push").disabled = b; };
+
+parent.postMessage({ pluginMessage: { type: "load-settings" } }, "*");
+["owner", "repo", "branch", "token"].forEach((id) => $(id).addEventListener("change", () => parent.postMessage({ pluginMessage: { type: "save-settings", settings: settings() } }, "*")));
+
+const b64decode = (b64) => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\n/g, "")), (c) => c.charCodeAt(0)));
+const b64encode = (str) => { const bytes = new TextEncoder().encode(str); let bin = ""; bytes.forEach((b) => (bin += String.fromCharCode(b))); return btoa(bin); };
+
+async function gh(path, opts = {}) {
+  const s = settings();
+  if (!s.owner || !s.repo) throw new Error("Preencha usuário e repositório.");
+  const headers = { Accept: "application/vnd.github+json" };
+  if (s.token) headers.Authorization = "Bearer " + s.token;
+  const res = await fetch(`https://api.github.com/repos/${s.owner}/${s.repo}/contents/${path}` + (opts.method ? "" : `?ref=${encodeURIComponent(s.branch)}`), { ...opts, headers: { ...headers, ...(opts.headers || {}) } });
+  if (!res.ok) throw new Error(`GitHub respondeu ${res.status} em ${path}: ${(await res.text()).slice(0, 160)}`);
+  return res.json();
+}
+async function readFile(path) { const f = await gh(path); return { sha: f.sha, json: JSON.parse(b64decode(f.content)) }; }
+async function writeFile(path, json, sha, message) {
+  const s = settings();
+  if (!s.token) throw new Error("Para enviar, informe um token do GitHub.");
+  return gh(path, { method: "PUT", body: JSON.stringify({ message, content: b64encode(JSON.stringify(json, null, 2) + "\n"), sha, branch: s.branch }) });
+}
+
+let pending = null;
+$("pull").onclick = async () => {
+  busy(true); log("Lendo o repositório…");
+  try {
+    const [t, c] = await Promise.all([readFile(FILES.tokens), readFile(FILES.content)]);
+    parent.postMessage({ pluginMessage: { type: "apply", tokens: t.json, content: c.json } }, "*");
+  } catch (e) { log("Erro: " + e.message); busy(false); }
+};
+$("push").onclick = async () => {
+  busy(true); log("Lendo versão atual do repositório…");
+  try {
+    const [t, c] = await Promise.all([readFile(FILES.tokens), readFile(FILES.content)]);
+    pending = { t, c };
+    parent.postMessage({ pluginMessage: { type: "collect", tokens: t.json, content: c.json } }, "*");
+  } catch (e) { log("Erro: " + e.message); busy(false); }
+};
+
+onmessage = async (ev) => {
+  const m = ev.data.pluginMessage; if (!m) return;
+  if (m.type === "settings") Object.entries(m.settings).forEach(([k, v]) => { if ($(k) && v) $(k).value = v; });
+  if (m.type === "error") { log("Erro: " + m.message); busy(false); }
+  if (m.type === "applied") {
+    log(`Figma atualizado ✔\n• Cores alteradas: ${m.tokens.changed} (novas: ${m.tokens.created})\n• Camadas de texto/instância alteradas: ${m.content.changed}` + (m.content.missing.length ? `\n• Chaves sem valor no JSON: ${m.content.missing.join(", ")}` : ""));
+    busy(false);
+  }
+  if (m.type === "collected") {
+    try {
+      const out = [];
+      const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+      if (!same(m.data.tokens, pending.t.json)) { await writeFile(FILES.tokens, m.data.tokens, pending.t.sha, "sync(figma): atualiza tokens de cor"); out.push("tokens.json"); }
+      if (!same(m.data.content, pending.c.json)) { await writeFile(FILES.content, m.data.content, pending.c.sha, "sync(figma): atualiza conteúdo das telas"); out.push("content.json"); }
+      log(out.length ? `Enviado ao GitHub ✔\n• Arquivos atualizados: ${out.join(", ")}\nO site do protótipo se atualiza sozinho em ~1 min.` : "Nada mudou: o GitHub já está igual ao Figma.");
+    } catch (e) { log("Erro: " + e.message); }
+    busy(false);
+  }
+};
+</script>

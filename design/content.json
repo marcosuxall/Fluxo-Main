@@ -1,0 +1,47 @@
+{
+  "brand": { "name": "Nexo" },
+  "login": {
+    "title": "Entrar na sua conta",
+    "welcome": "Bem-vindo de volta! Informe seus dados.",
+    "headline": "Gerencie tudo em um só lugar.",
+    "subtitle": "Acompanhe clientes, vendas e relatórios com clareza — sem planilhas espalhadas.",
+    "footer": "© 2026 Nexo Sistemas"
+  },
+  "user": { "name": "Ana Souza", "role": "Administradora" },
+  "dashboard": {
+    "greeting": "Olá, Ana",
+    "subtitle": "Aqui está o resumo da sua operação hoje."
+  },
+  "metrics": {
+    "hoje": [
+      { "Label": "Receita do dia", "Valor": "R$ 2.340", "Variação": "+5,2% vs. ontem" },
+      { "Label": "Novos clientes", "Valor": "6", "Variação": "+2 vs. ontem" },
+      { "Label": "Tickets abertos", "Valor": "14", "Variação": "-3 desde ontem" }
+    ],
+    "7d": [
+      { "Label": "Receita da semana", "Valor": "R$ 14.880", "Variação": "+9,7% vs. semana anterior" },
+      { "Label": "Novos clientes", "Valor": "38", "Variação": "+4,1% vs. semana anterior" },
+      { "Label": "Tickets abertos", "Valor": "22", "Variação": "-12% vs. semana anterior" }
+    ],
+    "30d": [
+      { "Label": "Receita do mês", "Valor": "R$ 48.920", "Variação": "+12,4% vs. mês anterior" },
+      { "Label": "Novos clientes", "Valor": "126", "Variação": "+8,1% vs. mês anterior" },
+      { "Label": "Tickets abertos", "Valor": "41", "Variação": "-6,3% vs. mês anterior" }
+    ]
+  },
+  "table": {
+    "rows": [
+      { "Cliente": "Mercado Bom Preço", "Status": "Pago", "Valor": "R$ 3.240,00" },
+      { "Cliente": "Studio Arte Viva", "Status": "Pendente", "Valor": "R$ 890,00" },
+      { "Cliente": "TechLog Transportes", "Status": "Pago", "Valor": "R$ 12.500,00" },
+      { "Cliente": "Clínica Bem Estar", "Status": "Pendente", "Valor": "R$ 2.150,00" }
+    ],
+    "newRow": { "Cliente": "Padaria Pão Quente", "Status": "Pago", "Valor": "R$ 450,00" }
+  },
+  "notifications": [
+    { "title": "Pagamento recebido de TechLog", "time": "há 5 min" },
+    { "title": "Studio Arte Viva abriu um ticket", "time": "há 1 h" },
+    { "title": "Relatório mensal disponível", "time": "ontem" }
+  ],
+  "toast": { "saved": "Registro salvo com sucesso" }
+}

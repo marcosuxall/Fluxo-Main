@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Nexo — Protótipo navegável</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%234F46E5'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="loadError" class="load-error" hidden>
+    Não foi possível carregar <code>design/*.json</code>. Rode <code>npm start</code> na raiz do projeto e abra o endereço que aparecer no terminal.
+  </div>
+
+  <!-- ============ TELA 1 · LOGIN ============ -->
+  <section class="screen screen-login is-active" id="login" aria-label="Login">
+    <aside class="brand-panel">
+      <div class="logo logo-light"><span class="mark"></span><strong data-k="brand.name"></strong></div>
+      <div class="brand-copy">
+        <h1 data-k="login.headline"></h1>
+        <p data-k="login.subtitle"></p>
+      </div>
+      <small data-k="login.footer"></small>
+    </aside>
+
+    <div class="form-area">
+      <form class="login-form" id="loginForm" novalidate>
+        <header>
+          <h2 data-k="login.title"></h2>
+          <p class="muted" data-k="login.welcome"></p>
+        </header>
+        <label class="field"><span>E-mail</span><input type="email" value="ana@empresa.com" autocomplete="off"></label>
+        <label class="field"><span>Senha</span><input type="password" value="nexo1234" autocomplete="off"></label>
+        <div class="form-row">
+          <label class="check"><input type="checkbox"><span class="box" aria-hidden="true"></span>Lembrar de mim</label>
+          <button type="button" class="link" id="forgotBtn">Esqueci minha senha</button>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="enterBtn">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="btn-label">Entrar</span>
+        </button>
+        <p class="muted center small">Não tem conta? Fale com o administrador.</p>
+        <p class="hint center">Dica: pressione <kbd>Enter</kbd> para entrar</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ TELA 2 · PAINEL ============ -->
+  <section class="screen screen-dashboard" id="painel" aria-label="Painel">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="logo"><span class="mark"></span><strong data-k="brand.name"></strong></div>
+        <nav class="nav">
+          <button class="nav-item is-active" type="button">Painel</button>
+          <button class="nav-item" type="button">Clientes</button>
+          <button class="nav-item" type="button">Relatórios</button>
+          <button class="nav-item" type="button">Configurações</button>
+        </nav>
+      </div>
+      <div class="sidebar-foot">
+        <div class="popover-wrap">
+          <button class="user-row" id="userBtn" type="button" aria-haspopup="menu" aria-expanded="false">
+            <span class="avatar" aria-hidden="true"></span>
+            <span class="user-info"><strong data-k="user.name"></strong><small data-k="user.role"></small></span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+          </button>
+          <div class="menu menu-up" id="userMenu" role="menu" hidden>
+            <button type="button" role="menuitem">Meu perfil</button>
+            <button type="button" role="menuitem">Preferências</button>
+            <hr>
+            <button type="button" role="menuitem" class="danger" data-logout>Sair da conta</button>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-block" type="button" data-logout>Sair</button>
+      </div>
+    </aside>
+
+    <div class="content">
+      <header class="top">
+        <div>
+          <h1 data-k="dashboard.greeting"></h1>
+          <p class="muted" data-k="dashboard.subtitle"></p>
+        </div>
+        <div class="actions">
+          <div class="popover-wrap">
+            <button class="icon-btn" id="bellBtn" type="button" aria-label="Notificações" aria-haspopup="true" aria-expanded="false">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              <span class="badge" id="badge"></span>
+            </button>
+            <div class="menu dropdown" id="bellMenu" hidden>
+              <div class="dropdown-head"><strong>Notificações</strong><button type="button" class="link" id="markRead">Marcar como lidas</button></div>
+              <ul id="notifList"></ul>
+            </div>
+          </div>
+          <button class="btn btn-primary" type="button" id="newBtn">+ Novo registro <kbd class="kbd-inline">N</kbd></button>
+        </div>
+      </header>
+
+      <section class="summary">
+        <div class="summary-head">
+          <h2>Resumo</h2>
+          <div class="segmented" role="tablist" aria-label="Período">
+            <button type="button" role="tab" data-period="hoje">Hoje</button>
+            <button type="button" role="tab" data-period="7d">7 dias</button>
+            <button type="button" role="tab" data-period="30d" class="is-active">30 dias</button>
+          </div>
+        </div>
+        <div class="cards" id="cards"></div>
+      </section>
+
+      <section class="activity">
+        <h2>Atividade recente</h2>
+        <div id="rows"></div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ============ OVERLAYS ============ -->
+  <div class="overlay" id="ovRecover" hidden>
+    <div class="backdrop" data-close></div>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="recTitle">
+      <div class="modal-head"><h3 id="recTitle">Recuperar senha</h3><button class="x" type="button" data-close aria-label="Fechar">✕</button></div>
+      <p class="muted">Informe o e-mail da sua conta e enviaremos um link para criar uma nova senha.</p>
+      <label class="field"><span>E-mail</span><input type="email" value="ana@empresa.com"></label>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" type="button" data-close>Cancelar</button>
+        <button class="btn btn-primary" type="button" id="sendLink">Enviar link</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="ovSent" hidden>
+    <div class="backdrop" data-close></div>
+    <div class="modal modal-center" role="dialog" aria-modal="true" aria-labelledby="sentTitle">
+      <span class="success-icon" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <h3 id="sentTitle">Verifique seu e-mail</h3>
+      <p class="muted">Enviamos um link de redefinição para ana@empresa.com. Ele expira em 30 minutos.</p>
+      <button class="btn btn-primary btn-block" type="button" data-close>Voltar ao login</button>
+    </div>
+  </div>
+
+  <div class="overlay overlay-drawer" id="ovNew" hidden>
+    <div class="backdrop" data-close></div>
+    <form class="drawer" id="newForm" role="dialog" aria-modal="true" aria-labelledby="newTitle">
+      <div class="drawer-body">
+        <div class="modal-head"><h3 id="newTitle">Novo registro</h3><button class="x" type="button" data-close aria-label="Fechar">✕</button></div>
+        <p class="muted">Cadastre uma nova cobrança.</p>
+        <label class="field"><span>Cliente</span><input name="Cliente" id="fCliente"></label>
+        <label class="field"><span>Valor</span><input name="Valor" id="fValor"></label>
+        <label class="field"><span>Vencimento</span><input name="Vencimento" value="15/11/2026"></label>
+        <fieldset class="chips">
+          <legend>Status</legend>
+          <label><input type="radio" name="Status" value="Pago" checked><span>Pago</span></label>
+          <label><input type="radio" name="Status" value="Pendente"><span>Pendente</span></label>
+        </fieldset>
+      </div>
+      <div class="drawer-foot">
+        <button class="btn btn-secondary" type="button" data-close>Cancelar</button>
+        <button class="btn btn-primary" type="submit">Salvar registro</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+    <span class="toast-icon" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    <span data-k="toast.saved"></span>
+    <button type="button" class="toast-x" aria-label="Fechar aviso">✕</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
