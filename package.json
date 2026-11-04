@@ -1,0 +1,12 @@
+{
+  "name": "nexo-fluxo-main",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Protótipo navegável do Nexo, sincronizado com o Figma.",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "validate": "node scripts/validate.mjs",
+    "snapshot": "node scripts/figma-snapshot.mjs"
+  },
+  "engines": { "node": ">=18" }
+}
